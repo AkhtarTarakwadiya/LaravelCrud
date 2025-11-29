@@ -15,11 +15,9 @@ return new class extends Migration
             $table->id();
             $table->string('title');
             $table->text('content');
-            $table->bigInteger('user_id');
-            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->string('image_path')->nullable();
             $table->string('slug')->unique();
-            
+
             $table->timestamps();
         });
     }

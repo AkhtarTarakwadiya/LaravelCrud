@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Artical;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Storage;
 
 class ArticalController extends Controller
 {
@@ -26,15 +27,15 @@ class ArticalController extends Controller
         $request->validate([
             'title' => 'required',
             'content' => 'required',
-            'user_id' => 'required|exists:users,id',
+            // 'user_id' => 'required|exists:users,id',
             'slug' => 'required|unique:articals,slug',
             'image_path' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
         ]);
 
         $artical = new Artical($request->all());
 
-        if ($request->hasFile('image_path')) {
-            $path = $request->file('image_path')->store('images', 'public');
+        if ($request->hasFile('image')) {
+            $path = $request->file('image')->store('images', 'public');
             $artical->image_path = $path;
         }
 
@@ -59,7 +60,7 @@ class ArticalController extends Controller
         $request->validate([
             'title' => 'required',
             'content' => 'required',
-            'user_id' => 'required|exists:users,id',
+            // 'user_id' => 'required|exists:users,id',
             'slug' => 'required|unique:articals,slug,' . $artical->id,
             'image_path' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
         ]);
@@ -77,11 +78,20 @@ class ArticalController extends Controller
                          ->with('success', 'Artical updated successfully.');
     }
 
-    public function destroy(Artical $artical)
-    {
-        $artical->delete();
+//    use Illuminate\Support\Facades\Storage;
 
-        return redirect()->route('articals.index')
-                         ->with('success', 'Artical deleted successfully.');
+public function destroy(Artical $artical)
+{
+    // Delete image if exists
+    if ($artical->image_path && Storage::exists('public/' . $artical->image_path)) {
+        Storage::delete('public/' . $artical->image_path);
     }
+
+    // Delete article record
+    $artical->delete();
+
+    return redirect()->route('articals.index')
+                     ->with('success', 'Artical deleted successfully.');
+}
+
 }
